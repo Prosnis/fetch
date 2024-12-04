@@ -6,6 +6,13 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
+const corsOptions = {
+  origin: 'http://localhost:5173', // Укажите источник клиента
+  methods: ['GET', 'POST'],       // Разрешённые методы
+  allowedHeaders: ['Content-Type'] // Разрешённые заголовки
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 const fetchProductWithPuppeteer = async (url) => {

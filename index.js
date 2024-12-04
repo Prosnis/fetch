@@ -6,30 +6,35 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors())
+const corsOptions = {
+  origin: 'http://localhost:5173', // Укажите источник клиента
+  methods: ['GET', 'POST'],       // Разрешённые методы
+  allowedHeaders: ['Content-Type'] // Разрешённые заголовки
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 const fetchProductWithPuppeteer = async (url) => {
-  console.log('Запуск puppeteer для URL:', url);
   const browser = await puppeteer.launch({
     executablePath: await chrome.executablePath,
     args: chrome.args,
     headless: chrome.headless,
   });
-
   const page = await browser.newPage();
-  console.log('Страница создана');
+
   await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.77 Safari/537.36');
+
   await page.setExtraHTTPHeaders({
     'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
 });
 
   try {
-    console.log('Загрузка страницы...');
     await page.goto(url, { waitUntil: 'domcontentloaded' });
-    await page.screenshot({ path: 'debug.png', fullPage: true });
-    console.log('Страница загружена');
 
+    await page.screenshot({ path: 'debug.png', fullPage: true });
+
+    // Парсим данные о товаре
     const data = await page.evaluate(() => {
       return {
         title: document.querySelector('[data-additional-zone="title"]')?.innerText || 'Название не найдено',
@@ -42,7 +47,7 @@ const fetchProductWithPuppeteer = async (url) => {
     await browser.close();
     return data;
   } catch (error) {
-    console.log('Ошибка при парсинге:', error);
+    console.error('Ошибка при парсинге:', error.message);
     await browser.close();
     throw error;
   }
@@ -63,14 +68,9 @@ app.post('/fetch-product', async (req, res) => {
   }
 });
 
+app.use(cors())
 app.listen(port, () => {
   console.log(`Сервер работает на http://localhost:${port}`);
 });
-app.get('/', (req, res) => {
-  res.send('Сервер работает!');
-});
-app.use((req, res, next) => {
-  console.log(`Method: ${req.method}, URL: ${req.url}`);
-  next();
-})
+
 

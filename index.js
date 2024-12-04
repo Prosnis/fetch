@@ -6,11 +6,17 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Настраиваем CORS
 const corsOptions = {
-  origin: 'http://localhost:5173', // Укажите источник клиента
-  methods: ['GET', 'POST'],       // Разрешённые методы
-  allowedHeaders: ['Content-Type'] // Разрешённые заголовки
+  origin: ['http://localhost:5173'], // Укажите источник вашего клиента
+  methods: ['GET', 'POST'],         // Разрешённые методы
+  allowedHeaders: ['Content-Type'], // Разрешённые заголовки
+  credentials: true                 // Если нужны cookies
 };
+app.use(cors(corsOptions));
+
+// Обработка preflight-запросов
+app.options('/fetch-product', cors(corsOptions));
 app.use(cors(corsOptions));
 
 app.use(express.json());
@@ -66,6 +72,15 @@ app.post('/fetch-product', async (req, res) => {
   } catch (error) {
     res.status(500).send('Ошибка при получении данных о товаре');
   }
+});
+
+app.options('*', (req, res) => {
+  res.set({
+    'Access-Control-Allow-Origin': 'http://localhost:5173',
+    'Access-Control-Allow-Methods': 'GET,POST',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  });
+  res.sendStatus(204);
 });
 
 app.use(cors())

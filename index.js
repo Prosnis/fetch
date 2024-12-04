@@ -6,7 +6,7 @@ const app = express();
 const port = 3000;
 
 const corsOptions = {
-  origin: 'http://localhost:5173', 
+  origin: '*', 
   methods: ['GET', 'POST'],       
   allowedHeaders: ['Content-Type'] 
 };
@@ -47,7 +47,7 @@ const fetchProductWithPuppeteer = async (url) => {
     throw error;
   }
 };
-
+app.options('/fetch-product', cors(corsOptions));
 app.post('/fetch-product', async (req, res) => {
   const { url } = req.body;
 

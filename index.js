@@ -1,32 +1,21 @@
 const express = require('express');
-const puppeteer = require('puppeteer-core');
-const chrome = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer');
 const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 
-// Настраиваем CORS
 const corsOptions = {
-  origin: ['http://localhost:5173'], // Укажите источник вашего клиента
-  methods: ['GET', 'POST'],         // Разрешённые методы
-  allowedHeaders: ['Content-Type'], // Разрешённые заголовки
-  credentials: true                 // Если нужны cookies
+  origin: 'http://localhost:5173', 
+  methods: ['GET', 'POST'],       
+  allowedHeaders: ['Content-Type'] 
 };
-app.use(cors(corsOptions));
-
-// Обработка preflight-запросов
-app.options('/fetch-product', cors(corsOptions));
 app.use(cors(corsOptions));
 
 app.use(express.json());
 
 const fetchProductWithPuppeteer = async (url) => {
-  const browser = await puppeteer.launch({
-    executablePath: await chrome.executablePath,
-    args: chrome.args,
-    headless: chrome.headless,
-  });
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
 
   await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.77 Safari/537.36');
@@ -74,18 +63,7 @@ app.post('/fetch-product', async (req, res) => {
   }
 });
 
-app.options('*', (req, res) => {
-  res.set({
-    'Access-Control-Allow-Origin': 'http://localhost:5173',
-    'Access-Control-Allow-Methods': 'GET,POST',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  });
-  res.sendStatus(204);
-});
 
-app.use(cors())
 app.listen(port, () => {
   console.log(`Сервер работает на http://localhost:${port}`);
 });
-
-

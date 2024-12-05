@@ -7,18 +7,12 @@ const port = 3000;
 
 const corsOptions = {
   origin: '*', 
-  methods: ['GET', 'POST'],       
+  methods: ['GET', 'POST'],      
   allowedHeaders: ['Content-Type'] 
 };
 app.use(cors(corsOptions));
 
-app.use((req, res, next) => {
-  if (!req.secure && req.get('x-forwarded-proto') !== 'https') {
-    res.redirect(`https://${req.hostname}${req.url}`);
-  } else {
-    next();
-  }
-});
+app.use(express.json());
 
 const fetchProductWithPuppeteer = async (url) => {
   const browser = await puppeteer.launch({ headless: true });
@@ -53,7 +47,7 @@ const fetchProductWithPuppeteer = async (url) => {
     throw error;
   }
 };
-app.options('/fetch-product', cors(corsOptions));
+
 app.post('/fetch-product', async (req, res) => {
   const { url } = req.body;
 
